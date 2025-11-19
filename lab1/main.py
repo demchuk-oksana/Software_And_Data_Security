@@ -358,7 +358,7 @@ class HammingCodeApp:
             self.log_text.insert(tk.END, f"\n✗ ПОМИЛКА: {str(e)}\n")
 
     def decode_file(self):
-        """Декодування файлу"""
+    
         if not self.decoded_file_path:
             messagebox.showerror("Помилка", "Виберіть файл для декодування!")
             return
@@ -394,6 +394,15 @@ class HammingCodeApp:
                     encoded_blocks[block_idx][bit_idx] ^= 1
                     self.log_text.insert(tk.END, f"Внесено помилку в біт №{error_bit_num}\n")
 
+                # Зберігаємо пошкоджений файл для подальшого використання
+                damaged_path = self.decoded_file_path.replace('.ham', '_damaged.ham')
+                with open(damaged_path, 'w') as f:
+                    f.write(f"{block_size}\n")
+                    f.write(f"{original_length}\n")
+                    for block in encoded_blocks:
+                        f.write(''.join(map(str, block)) + '\n')
+                self.log_text.insert(tk.END, f"Пошкоджений файл збережено як: {os.path.basename(damaged_path)}\n")
+
             # Декодуємо блоки
             all_decoded = []
             errors_found = 0
@@ -423,11 +432,13 @@ class HammingCodeApp:
             messagebox.showinfo("Успіх",
                                 f"Файл декодовано!\n"
                                 f"Виявлено помилок: {errors_found}\n"
-                                f"Збережено як: {os.path.basename(output_path)}")
+                                f"Збережено як: {os.path.basename(output_path)}\n"
+                                f"Пошкоджений файл: {os.path.basename(damaged_path) if error_bit_num > 0 else 'не створено'}")
 
         except Exception as e:
             messagebox.showerror("Помилка", f"Помилка при декодуванні:\n{str(e)}")
             self.log_text.insert(tk.END, f"\n✗ ПОМИЛКА: {str(e)}\n")
+
 
 
 if __name__ == "__main__":
